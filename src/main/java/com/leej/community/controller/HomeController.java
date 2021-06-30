@@ -24,7 +24,8 @@ public class HomeController {
     @Autowired
     private UserService userService;
     @GetMapping("/index")
-    public String getIndexPage(Model m, Page page){
+    public String getIndexPage(Model m, Page page){//会自动根据?后的参数自动给page赋值 current赋值
+        System.out.println(page.getCurrent());
         page.setRows(discussPostService.findDiscussPostsRows(0));
         page.setPath("/index");
         List<DiscussPost> discusssPosts = discussPostService.findDiscusssPosts(0, page.getOffest(), page.getLimit());

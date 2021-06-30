@@ -1,7 +1,6 @@
 package com.leej.community.entity;
 
 import lombok.Getter;
-import lombok.Setter;
 
 //封装分页相关信息
 @Getter
@@ -44,12 +43,12 @@ public class Page {
     //获取启示页码
     public int getFrom(){
         int from = current-2;
-        return from<1?1:from;
+        return Math.max(1,from);
     }
     //获取终止页码
     public int getTo(){
         int to = current+2;
         int total = getTotal();
-        return to>total?total:to;
+        return Math.min(to,total);
     }
 }
