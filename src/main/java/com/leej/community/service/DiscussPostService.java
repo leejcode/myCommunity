@@ -2,7 +2,6 @@ package com.leej.community.service;
 
 import com.leej.community.dao.DiscussPostMapper;
 import com.leej.community.entity.DiscussPost;
-import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
