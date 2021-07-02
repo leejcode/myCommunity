@@ -32,7 +32,7 @@ public class Page {
         this.path = path;
     }
     //获取当前页的起始行
-    public int getOffest(){
+    public int getOffset(){
         return (current-1)*limit;
     }
     //获取总页数

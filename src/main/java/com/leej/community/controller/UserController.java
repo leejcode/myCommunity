@@ -74,11 +74,9 @@ public class UserController {
     @GetMapping("/header/{fileName}")//这里提供图像访问方式  关联web地址和本地地址图片
     public void getHeader(@PathVariable("fileName")String fileName, HttpServletResponse response){
         //服务器存放路径
-        System.out.println(fileName);
         fileName = uploadPath + "/" + fileName;
         String suffix = fileName.substring(fileName.lastIndexOf("."));
         //响应图片
-        System.out.println(fileName);
         response.setContentType("image/"+suffix);
         try (FileInputStream fis = new FileInputStream(fileName)){
             ServletOutputStream outputStream = response.getOutputStream();

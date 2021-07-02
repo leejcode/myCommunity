@@ -97,7 +97,7 @@ public class LoginController implements CommunityConstant {
     public String login(Model model,String username,String password,String code,boolean rememberme,
                         HttpSession session,HttpServletResponse response){
         String kaptcha = (String) session.getAttribute("kaptcha");
-        if(StringUtils.isBlank((kaptcha))||StringUtils.isBlank(code)||!kaptcha.equals(code)){
+        if(StringUtils.isBlank((kaptcha))||StringUtils.isBlank(code)||!kaptcha.equalsIgnoreCase(code)){
             model.addAttribute("codeMsg","验证码不正确");
             return "/site/login";
         }
