@@ -2,6 +2,7 @@ package com.leej.community.controller;
 
 import com.leej.community.annotation.LoginRequired;
 import com.leej.community.entity.User;
+import com.leej.community.service.LikeService;
 import com.leej.community.service.UserService;
 import com.leej.community.utils.CommunityUtil;
 import com.leej.community.utils.HostHolder;
@@ -35,6 +36,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private HostHolder hostHolder;
+    @Autowired
+    private LikeService likeService;
     @LoginRequired
     @GetMapping("setting")
     public String getSettingPage(){
@@ -91,5 +94,18 @@ public class UserController {
             e.printStackTrace();
         }
 
+    }
+    //个人主页
+    @GetMapping("/profile/{userId}")
+    public String getProfilePage(@PathVariable("userId") int userId,Model model){
+        User user = userService.findUserById(userId);
+        if(user==null){
+            throw new RuntimeException("该用户不存在");
+
+        }
+        model.addAttribute("user",user);
+        int likeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount",likeCount);
+        return "/site/profile";
     }
 }

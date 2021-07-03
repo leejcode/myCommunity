@@ -5,7 +5,9 @@ import com.leej.community.entity.DiscussPost;
 import com.leej.community.entity.Page;
 import com.leej.community.entity.User;
 import com.leej.community.service.DiscussPostService;
+import com.leej.community.service.LikeService;
 import com.leej.community.service.UserService;
+import com.leej.community.utils.CommunityConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,11 +20,13 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class HomeController {
+public class HomeController implements CommunityConstant {
     @Autowired
     private DiscussPostService discussPostService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private LikeService likeService;
     @GetMapping("/index")
     public String getIndexPage(Model m, Page page){//会自动根据?后的参数自动给page赋值 current赋值
         page.setRows(discussPostService.findDiscussPostsRows(0));
@@ -35,6 +39,8 @@ public class HomeController {
                 map.put("post",d);
                 User user=userService.findUserById(d.getUserId());
                 map.put("user",user);
+                long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST,d.getId());
+                map.put("likeCount",likeCount);
                 dis.add(map);
             }
         }
