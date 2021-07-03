@@ -4,6 +4,7 @@ import com.leej.community.entity.Message;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface MessageMapper {
@@ -17,4 +18,8 @@ public interface MessageMapper {
     int selectLetterCount(String conversationId);
     //查询未读的私信数量
     int selectLetterUnreadCount(int userId,String conversationId);
+    //新增一个消息
+    int insertMessage(Message message);
+    //修改消息状态
+    int updateStatus(List<Integer> ids,int status);
 }

@@ -5,17 +5,17 @@ import com.leej.community.entity.Page;
 import com.leej.community.entity.User;
 import com.leej.community.service.MessageService;
 import com.leej.community.service.UserService;
+import com.leej.community.utils.CommunityUtil;
 import com.leej.community.utils.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class MessageController {
@@ -68,6 +68,11 @@ public class MessageController {
         }
         model.addAttribute("letters",letters);
         model.addAttribute("target",getLetterTarget(conversationId));
+        //设置已读
+        List<Integer> letterIds = getLetterIds(messages);
+        if(!letterIds.isEmpty()){
+            messageService.readMessage(letterIds);
+        }
         return "/site/letter-detail";
     }
     private User getLetterTarget(String conversationId){
@@ -80,5 +85,38 @@ public class MessageController {
         else{
             return userService.findUserById(d0);
         }
+    }
+    private List<Integer> getLetterIds(List<Message> letterList){
+        List<Integer> ids = new ArrayList<>();
+        if(letterList!=null){
+            for(Message message:letterList){
+                if(hostHolder.getUser().getId()==message.getToId()&&message.getStatus()==0){
+                    ids.add(message.getId());
+                }
+            }
+        }
+        return ids;
+    }
+    @PostMapping("/letter/send")
+    @ResponseBody
+    public String sendLetter(String toName,String content){
+        User target = userService.findUserByName(toName);
+        if(target==null){
+            return CommunityUtil.getJsonString(1,"目标用户不存在");//实现前后端分离的一种方式
+        }
+        Message message = new Message();
+        message.setContent(content);
+        message.setToId(target.getId());
+        message.setFromId(hostHolder.getUser().getId());
+        if(message.getFromId()<message.getToId())
+        {
+            message.setConversationId(message.getFromId()+"_"+ message.getToId());
+        }else{
+            message.setConversationId(message.getToId()+"_"+ message.getFromId());
+        }
+        message.setCreateTime(new Date());
+        message.setStatus(0);
+        messageService.addMessage(message);
+        return CommunityUtil.getJsonString(0);
     }
 }
