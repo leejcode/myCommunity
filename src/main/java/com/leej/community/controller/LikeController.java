@@ -1,7 +1,12 @@
 package com.leej.community.controller;
 
+import com.leej.community.entity.Comment;
+import com.leej.community.entity.DiscussPost;
+import com.leej.community.entity.Event;
 import com.leej.community.entity.User;
+import com.leej.community.event.EventProducer;
 import com.leej.community.service.LikeService;
+import com.leej.community.utils.CommunityConstant;
 import com.leej.community.utils.CommunityUtil;
 import com.leej.community.utils.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +19,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-public class LikeController {
+public class LikeController implements CommunityConstant {
     @Autowired
     private LikeService likeService;
     @Autowired
     private HostHolder hostHolder;
+    @Autowired
+    private EventProducer eventProducer;
     @PostMapping("/like")
     @ResponseBody
-    public String like(int entityType,int entityId,int entityUserId){
+    public String like(int entityType,int entityId,int entityUserId,int postId){
 
         User user =hostHolder.getUser();
 
@@ -31,7 +38,16 @@ public class LikeController {
         Map<String,Object> map = new HashMap<>();
         map.put("likeCount",entityLikeCount);
         map.put("likeStatus",Status);
-        System.out.println(map);
+        //触发事件
+        if(Status==1){
+            Event event = new Event().setTopic(TOPIC_LIKE)
+                    .setUserId(hostHolder.getUser().getId())
+                    .setEntityType(entityType)
+                    .setEntityId(entityId)
+                    .setEntityUserId(entityUserId)
+                    .setData("postId",postId);
+                    eventProducer.fireEvent(event);
+        }
         return CommunityUtil.getJsonString(0,null,map);
     }
 }
