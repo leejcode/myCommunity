@@ -2,8 +2,10 @@ package com.leej.community.controller;
 
 import com.leej.community.annotation.LoginRequired;
 import com.leej.community.entity.User;
+import com.leej.community.service.FollowService;
 import com.leej.community.service.LikeService;
 import com.leej.community.service.UserService;
+import com.leej.community.utils.CommunityConstant;
 import com.leej.community.utils.CommunityUtil;
 import com.leej.community.utils.HostHolder;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +27,7 @@ import java.io.IOException;
 
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController implements CommunityConstant {
     @Value("${community.path.domain}")
     private String domain;
     @Value("${community.path.upload}")
@@ -38,6 +40,8 @@ public class UserController {
     private HostHolder hostHolder;
     @Autowired
     private LikeService likeService;
+    @Autowired
+    private FollowService followService;
     @LoginRequired
     @GetMapping("setting")
     public String getSettingPage(){
@@ -106,6 +110,18 @@ public class UserController {
         model.addAttribute("user",user);
         int likeCount = likeService.findUserLikeCount(userId);
         model.addAttribute("likeCount",likeCount);
+        //关注数量
+        long followeeCount = followService.findFolloweeCount(userId,ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount",followeeCount);
+        //粉丝数量
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER, userId);
+        model.addAttribute("followerCount",followerCount);
+        //是否关注
+        boolean hasFollowed=false;
+        if(hostHolder.getUser()!=null){
+            hasFollowed=followService.hasFollowed(hostHolder.getUser().getId(),ENTITY_TYPE_USER,userId);
+        }
+        model.addAttribute("hasFollowed",hasFollowed);
         return "/site/profile";
     }
 }
