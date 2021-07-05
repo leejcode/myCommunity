@@ -1,9 +1,7 @@
 package com.leej.community.controller;
 
-import com.leej.community.entity.Comment;
-import com.leej.community.entity.DiscussPost;
-import com.leej.community.entity.Page;
-import com.leej.community.entity.User;
+import com.leej.community.entity.*;
+import com.leej.community.event.EventProducer;
 import com.leej.community.service.CommentService;
 import com.leej.community.service.DiscussPostService;
 import com.leej.community.service.LikeService;
@@ -32,6 +30,8 @@ public class DiscussPostController implements CommunityConstant {
     private CommentService commentService;
     @Autowired
     private LikeService likeService;
+    @Autowired
+    private EventProducer eventProducer;
     @PostMapping("/add")
     @ResponseBody
     public String addDiscussPost(String title,String content){
@@ -49,6 +49,13 @@ public class DiscussPostController implements CommunityConstant {
         post.setType(0);
         post.setCommentCount(0);
         discussPostService.addDiscussPost(post);
+        //触发发帖事件，将帖子存到es中
+        Event event=new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityId(post.getId())
+                .setEntityType(ENTITY_TYPE_POST);
+        eventProducer.fireEvent(event);
         return CommunityUtil.getJsonString(0,"发布成功");
     }
     @RequestMapping(path = "/detail/{discussPostId}", method = RequestMethod.GET)

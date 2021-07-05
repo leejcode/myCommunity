@@ -184,4 +184,36 @@ public class MessageController implements CommunityConstant {
         model.addAttribute("noticeUnreadCount",noticeUnreadCount);
         return "/site/notice";
     }
+    @GetMapping("/notice/detail/{topic}")
+    public String getNoticeDetail(@PathVariable("topic")String topic,Page page,Model model){
+        User user =hostHolder.getUser();
+        page.setLimit(5);
+        page.setPath("/notice/detail/"+topic);
+        page.setRows(messageService.findNoticeCount(user.getId(),topic));
+        List<Message> notices = messageService.findNotices(user.getId(), topic, page.getOffset(), page.getLimit());
+        List<Map<String,Object>> noticesList=new ArrayList<>();
+        if(notices!=null){
+            for(Message notice:notices){
+                Map<String,Object> map=new HashMap<>();
+                map.put("notice",notice);
+                //解析内容
+                String content=HtmlUtils.htmlUnescape(notice.getContent());
+                Map<String,Object> data =JSONObject.parseObject(content,HashMap.class);
+                map.put("user",userService.findUserById((Integer) data.get("userId")));
+                map.put("entityType",data.get("entityType"));
+                map.put("entityId",data.get("entityId"));
+                map.put("postId",data.get("postId"));
+                //通知作者
+                map.put("fromUser",userService.findUserById(notice.getFromId()));
+                noticesList.add(map);
+            }
+        }
+        model.addAttribute("notices",noticesList);
+        //设置已读
+        List<Integer> ids = getLetterIds(notices);
+        if(!ids.isEmpty()){
+            messageService.readMessage(ids);
+        }
+        return "/site/notice-detail";
+    }
 }
