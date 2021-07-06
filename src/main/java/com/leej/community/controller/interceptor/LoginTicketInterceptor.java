@@ -6,6 +6,11 @@ import com.leej.community.service.UserService;
 import com.leej.community.utils.CookieUtil;
 import com.leej.community.utils.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -30,7 +35,9 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
                 User user = userService.findUserById(loginTicket.getUserId());
                 //在本次请求中持有user
                 hostHolder.setUser(user);
-
+                //构建用户验证的结果并存入 securitycontext，以便security进行授权
+                Authentication  authentication = new UsernamePasswordAuthenticationToken(user,user.getPassword(),userService.getAuthority(user.getId()));
+                SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
             }
         }
         return true;
@@ -47,5 +54,6 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         hostHolder.clear();
+        SecurityContextHolder.clearContext();
     }
 }

@@ -10,7 +10,7 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString//添加getter和setter等方法
-public class User {
+public class User  {
     private Integer id;
     private String username;
     private String password;
@@ -21,4 +21,6 @@ public class User {
     private String activationCode;
     private String headerUrl;
     private Date createTime;
+
+
 }
