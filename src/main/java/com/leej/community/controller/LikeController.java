@@ -9,7 +9,9 @@ import com.leej.community.service.LikeService;
 import com.leej.community.utils.CommunityConstant;
 import com.leej.community.utils.CommunityUtil;
 import com.leej.community.utils.HostHolder;
+import com.leej.community.utils.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +28,8 @@ public class LikeController implements CommunityConstant {
     private HostHolder hostHolder;
     @Autowired
     private EventProducer eventProducer;
+    @Autowired
+    private RedisTemplate redisTemplate;
     @PostMapping("/like")
     @ResponseBody
     public String like(int entityType,int entityId,int entityUserId,int postId){
@@ -47,6 +51,10 @@ public class LikeController implements CommunityConstant {
                     .setEntityUserId(entityUserId)
                     .setData("postId",postId);
                     eventProducer.fireEvent(event);
+        }
+        if(entityType==ENTITY_TYPE_POST){
+            String redisKey = RedisKeyUtil.getPostScoreKey();
+            redisTemplate.opsForSet().add(redisKey,postId);
         }
         return CommunityUtil.getJsonString(0,null,map);
     }

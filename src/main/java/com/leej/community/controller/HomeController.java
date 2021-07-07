@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -28,10 +29,11 @@ public class HomeController implements CommunityConstant {
     @Autowired
     private LikeService likeService;
     @GetMapping("/index")
-    public String getIndexPage(Model m, Page page){//会自动根据?后的参数自动给page赋值 current赋值
+    public String getIndexPage(Model m, Page page,
+                               @RequestParam(name="orderMode",defaultValue = "0")int orderMode){//会自动根据?后的参数自动给page赋值 current赋值
         page.setRows(discussPostService.findDiscussPostsRows(0));
-        page.setPath("/index");
-        List<DiscussPost> discusssPosts = discussPostService.findDiscusssPosts(0, page.getOffset(), page.getLimit());
+        page.setPath("/index?orderMode="+orderMode);
+        List<DiscussPost> discusssPosts = discussPostService.findDiscusssPosts(0, page.getOffset(), page.getLimit(),orderMode);
         List<Map<String,Object>> dis = new ArrayList<>();
         if(discusssPosts!=null){
             for(DiscussPost d:discusssPosts){
@@ -45,7 +47,7 @@ public class HomeController implements CommunityConstant {
             }
         }
         m.addAttribute("discussPosts",dis);
-
+        m.addAttribute("orderMode",orderMode);
         return "/index";
     }
     @GetMapping("/error")

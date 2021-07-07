@@ -9,8 +9,10 @@ import com.leej.community.service.UserService;
 import com.leej.community.utils.CommunityConstant;
 import com.leej.community.utils.CommunityUtil;
 import com.leej.community.utils.HostHolder;
+import com.leej.community.utils.RedisKeyUtil;
 import jdk.nashorn.internal.runtime.linker.LinkerCallSite;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +34,8 @@ public class DiscussPostController implements CommunityConstant {
     private LikeService likeService;
     @Autowired
     private EventProducer eventProducer;
+    @Autowired
+    private RedisTemplate redisTemplate;
     @PostMapping("/add")
     @ResponseBody
     public String addDiscussPost(String title,String content){
@@ -56,6 +60,9 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityId(post.getId())
                 .setEntityType(ENTITY_TYPE_POST);
         eventProducer.fireEvent(event);
+        //计算帖子分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey,post.getId());
         return CommunityUtil.getJsonString(0,"发布成功");
     }
     @RequestMapping(path = "/detail/{discussPostId}", method = RequestMethod.GET)
@@ -161,6 +168,8 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityId(id)
                 .setEntityType(ENTITY_TYPE_POST);
         eventProducer.fireEvent(event);
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey,id);
         return CommunityUtil.getJsonString(0);
     }
     @PostMapping("/delete")//需要提交帖子的id之类的信息

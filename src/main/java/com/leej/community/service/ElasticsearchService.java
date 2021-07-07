@@ -34,6 +34,7 @@ public class ElasticsearchService {
     @Autowired
     private ElasticsearchTemplate elasticsearchTemplate;
     public void saveDiscussPost(DiscussPost post){
+        System.out.println(post);
         discussPostRespository.save(post);
     }
     public void deleteDiscussPost(int id){

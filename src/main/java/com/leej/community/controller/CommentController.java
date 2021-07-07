@@ -8,8 +8,10 @@ import com.leej.community.service.CommentService;
 import com.leej.community.service.DiscussPostService;
 import com.leej.community.utils.CommunityConstant;
 import com.leej.community.utils.HostHolder;
+import com.leej.community.utils.RedisKeyUtil;
 import org.apache.catalina.manager.host.HostManagerServlet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +31,8 @@ public class CommentController implements CommunityConstant {
     private EventProducer eventProducer;
     @Autowired
     private DiscussPostService discussPostService;
+    @Autowired
+    private RedisTemplate redisTemplate;
     @PostMapping("/add/{postid}")
     public String addComment(@PathVariable("postid") int postid, Comment comment){
         comment.setUserId(hostHolder.getUser().getId());
@@ -59,7 +63,10 @@ public class CommentController implements CommunityConstant {
                     .setEntityId(postid)
                     .setEntityType(ENTITY_TYPE_POST);
             eventProducer.fireEvent(event);
+            String redisKey = RedisKeyUtil.getPostScoreKey();
+            redisTemplate.opsForSet().add(redisKey,postid);
         }
+
         return "redirect:/discuss/detail/"+postid;
     }
 }
